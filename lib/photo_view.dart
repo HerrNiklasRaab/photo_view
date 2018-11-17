@@ -82,22 +82,28 @@ class PhotoView extends StatefulWidget {
   /// )
   /// ```
   ///
-  const PhotoView({
-    Key key,
-    @required this.imageProvider,
-    this.loadingChild,
-    this.backgroundColor = const Color.fromRGBO(0, 0, 0, 1.0),
-    this.minScale,
-    this.maxScale,
-    this.gaplessPlayback = false,
-    this.size,
-    this.heroTag,
-    this.scaleStateChangedCallback,
-  }) : super(key: key);
+  const PhotoView(
+      {Key key,
+      @required this.imageProvider,
+      this.loadingChild,
+      this.backgroundColor = const Color.fromRGBO(0, 0, 0, 1.0),
+      this.minScale,
+      this.maxScale,
+      this.gaplessPlayback = false,
+      this.size,
+      this.heroTag,
+      this.scaleStateChangedCallback,
+      this.useImage = true,
+      this.zoomableWidget})
+      : super(key: key);
 
   /// Given a [imageProvider] it resolves into an zoomable image widget using. It
   /// is required
   final ImageProvider imageProvider;
+
+  final bool useImage;
+
+  final Widget zoomableWidget;
 
   /// While [imageProvider] is not resolved, [loadingChild] is build by [PhotoView]
   /// into the screen, by default it is a centered [CircularProgressIndicator]
@@ -141,24 +147,24 @@ class _PhotoViewState extends State<PhotoView> {
   PhotoViewScaleState _scaleState;
   ImageInfo _imageInfo;
 
-  Future<ImageInfo> _getImage() {
-    final Completer completer = Completer<ImageInfo>();
-    final ImageStream stream =
-        widget.imageProvider.resolve(const ImageConfiguration());
-    final listener = (ImageInfo info, bool synchronousCall) {
-      if (!completer.isCompleted) {
-        completer.complete(info);
-        setState(() {
-          _imageInfo = info;
-        });
-      }
-    };
-    stream.addListener(listener);
-    completer.future.then((_) {
-      stream.removeListener(listener);
-    });
-    return completer.future;
-  }
+  // Future<ImageInfo> _getImage() {
+  //   final Completer completer = Completer<ImageInfo>();
+  //   final ImageStream stream =
+  //       widget.imageProvider.resolve(const ImageConfiguration());
+  //   final listener = (ImageInfo info, bool synchronousCall) {
+  //     if (!completer.isCompleted) {
+  //       completer.complete(info);
+  //       setState(() {
+  //         _imageInfo = info;
+  //       });
+  //     }
+  //   };
+  //   stream.addListener(listener);
+  //   completer.future.then((_) {
+  //     stream.removeListener(listener);
+  //   });
+  //   return completer.future;
+  // }
 
   void setNextScaleState(PhotoViewScaleState newScaleState) {
     setState(() {
@@ -181,37 +187,39 @@ class _PhotoViewState extends State<PhotoView> {
   @override
   void initState() {
     super.initState();
-    _getImage();
+    // if (widget.useImage)
+    //_getImage();
     _scaleState = PhotoViewScaleState.contained;
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.heroTag == null
-        ? buildWithFuture(context)
-        : buildSync(context);
+    // return widget.heroTag == null || !widget.useImage
+    //     ? buildWithFuture(context)
+    //     : buildSync(context);
+    return buildSync(context);
   }
 
-  Widget buildWithFuture(BuildContext context) {
-    return FutureBuilder(
-        future: _getImage(),
-        builder: (BuildContext context, AsyncSnapshot<ImageInfo> info) {
-          if (info.hasData) {
-            return buildWrapper(context, info.data);
-          } else {
-            return buildLoading();
-          }
-        });
-  }
+  // Widget buildWithFuture(BuildContext context) {
+  //   return FutureBuilder(
+  //       future: _getImage(),
+  //       builder: (BuildContext context, AsyncSnapshot<ImageInfo> info) {
+  //         if (info.hasData) {
+  //           return buildWrapper(context, info.data);
+  //         } else {
+  //           return buildLoading();
+  //         }
+  //       });
+  // }
 
   Widget buildSync(BuildContext context) {
-    if (_imageInfo == null) {
-      return buildLoading();
-    }
-    return buildWrapper(context, _imageInfo);
+    // if (_imageInfo == null) {
+    //   return buildLoading();
+    // }
+    return buildWrapper(context, widget.useImage ? _imageInfo : null);
   }
 
-  Widget buildWrapper(BuildContext context, ImageInfo info) {
+  Widget buildWrapper(BuildContext context, [ImageInfo info]) {
     return PhotoViewImageWrapper(
       setNextScaleState: setNextScaleState,
       onStartPanning: onStartPanning,
@@ -228,6 +236,8 @@ class _PhotoViewState extends State<PhotoView> {
         size: widget.size ?? MediaQuery.of(context).size,
       ),
       heroTag: widget.heroTag,
+      useImage: widget.useImage,
+      zoomableWidget: widget.zoomableWidget,
     );
   }
 
@@ -255,18 +265,22 @@ class PhotoViewInline extends StatefulWidget {
   final bool gaplessPlayback;
   final Object heroTag;
   final PhotoViewScaleStateChangedCallback scaleStateChangedCallback;
+  final Widget zoomableWidget;
+  final bool useImage;
 
-  const PhotoViewInline({
-    Key key,
-    @required this.imageProvider,
-    this.loadingChild,
-    this.backgroundColor = const Color.fromRGBO(0, 0, 0, 1.0),
-    this.minScale,
-    this.maxScale,
-    this.gaplessPlayback = false,
-    this.heroTag,
-    this.scaleStateChangedCallback,
-  }) : super(key: key);
+  const PhotoViewInline(
+      {Key key,
+      this.imageProvider,
+      this.loadingChild,
+      this.backgroundColor = const Color.fromRGBO(0, 0, 0, 1.0),
+      this.minScale,
+      this.maxScale,
+      this.gaplessPlayback = false,
+      this.heroTag,
+      this.scaleStateChangedCallback,
+      this.useImage = true,
+      this.zoomableWidget})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _PhotoViewInlineState();
@@ -294,6 +308,8 @@ class _PhotoViewInlineState extends State<PhotoViewInline>
       gaplessPlayback: widget.gaplessPlayback,
       size: _size,
       heroTag: widget.heroTag,
+      useImage: widget.useImage,
+      zoomableWidget: widget.zoomableWidget,
       scaleStateChangedCallback: widget.scaleStateChangedCallback,
     );
   }

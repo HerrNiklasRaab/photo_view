@@ -22,6 +22,8 @@ double getScaleForScaleState(
     {@required Size size,
     @required PhotoViewScaleState scaleState,
     @required ImageInfo imageInfo}) {
+  if (imageInfo == null) 
+  return 1.0;
   switch (scaleState) {
     case PhotoViewScaleState.contained:
       return scaleForContained(size: size, imageInfo: imageInfo);
@@ -45,8 +47,16 @@ double scaleForContained({@required Size size, @required ImageInfo imageInfo}) {
 }
 
 double scaleForCovering({@required Size size, @required ImageInfo imageInfo}) {
-  final int imageWidth = imageInfo.image.width;
-  final int imageHeight = imageInfo.image.height;
+  int imageWidth;
+  int imageHeight;
+
+  if (imageInfo == null) {
+    imageWidth = size.width.toInt();
+    imageHeight = size.height.toInt();
+  } else {
+    imageWidth = imageInfo.image.width;
+    imageHeight = imageInfo.image.height;
+  }
 
   final double screenWidth = size.width;
   final double screenHeight = size.height;

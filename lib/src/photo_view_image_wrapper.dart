@@ -4,19 +4,21 @@ import 'package:photo_view/src/photo_view_scale_state.dart';
 import 'package:photo_view/src/photo_view_utils.dart';
 
 class PhotoViewImageWrapper extends StatefulWidget {
-  const PhotoViewImageWrapper({
-    Key key,
-    @required this.setNextScaleState,
-    @required this.onStartPanning,
-    @required this.imageInfo,
-    @required this.scaleState,
-    @required this.scaleBoundaries,
-    @required this.imageProvider,
-    @required this.size,
-    this.backgroundColor,
-    this.gaplessPlayback = false,
-    this.heroTag,
-  }) : super(key: key);
+  const PhotoViewImageWrapper(
+      {Key key,
+      @required this.setNextScaleState,
+      @required this.onStartPanning,
+      this.imageInfo,
+      @required this.scaleState,
+      @required this.scaleBoundaries,
+      @required this.imageProvider,
+      @required this.size,
+      this.backgroundColor,
+      this.gaplessPlayback = false,
+      this.heroTag,
+      this.useImage = true,
+      this.zoomableWidget})
+      : super(key: key);
 
   final Function setNextScaleState;
   final Function onStartPanning;
@@ -28,6 +30,8 @@ class PhotoViewImageWrapper extends StatefulWidget {
   final bool gaplessPlayback;
   final Size size;
   final String heroTag;
+  final bool useImage;
+  final Widget zoomableWidget;
 
   @override
   State<StatefulWidget> createState() {
@@ -117,8 +121,8 @@ class _PhotoViewImageWrapperState extends State<PhotoViewImageWrapper>
     final double _scale = scale ?? scaleStateAwareScale();
     final double x = offset.dx;
     final double y = offset.dy;
-    final double computedWidth = widget.imageInfo.image.width * _scale;
-    final double computedHeight = widget.imageInfo.image.height * _scale;
+    final double computedWidth = (widget.imageInfo == null ? widget.size.width / 1 : widget.imageInfo.image.width) * _scale;
+    final double computedHeight = (widget.imageInfo == null ? widget.size.height / 1 : widget.imageInfo.image.height) * _scale;
     final double screenWidth = widget.size.width;
     final double screenHeight = widget.size.height;
     final double screenHalfX = screenWidth / 2;
@@ -260,10 +264,10 @@ class _PhotoViewImageWrapperState extends State<PhotoViewImageWrapper>
         child: Center(
             child: Transform(
           child: CustomSingleChildLayout(
-            delegate: ImagePositionDelegate(widget.imageInfo.image.width / 1,
-                widget.imageInfo.image.height / 1),
-            child: _buildHero(),
-          ),
+            delegate: ImagePositionDelegate(widget.imageInfo == null ? widget.size.width / 1 : widget.imageInfo.image.width / 1,
+                widget.imageInfo == null ? widget.size.height / 1 : widget.imageInfo.image.height / 1),
+            child: widget.useImage ? _buildHero() : widget.zoomableWidget,
+          ), 
           transform: matrix,
           alignment: Alignment.center,
         )),
